@@ -1,564 +1,1471 @@
 <!DOCTYPE html>
 <html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dźwignik 4 - Mobile Simulator</title>
-    <link rel="icon" type="image/png" href="imagines/ikonka_windy.png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        
-        * {
-            box-sizing: border-box;
-        }
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>
+   Dźwignik 4 - Mobile Simulator
+  </title>
+  <link href="imagines/ikonka_windy.png" rel="icon" type="image/png"/>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+* {
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #1f2937;
+    color: white;
+    margin: 0;
+    overflow: hidden;
+    touch-action: none;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100dvh;
+}
+.game-board {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    background: linear-gradient(to bottom, #374151 0%, #111827 100%);
+    overflow: hidden;
+}
+.lift-system {
+    position: absolute;
+    bottom: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    z-index: 10;
+}
+.scissor-mechanism {
+    width: 120px;
+    height: 20px;
+    transition: height 1.5s ease-in-out;
+    position: relative;
+    background-color: transparent;
+}
+.scissor-mechanism svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.lift-cage {
+    width: 150px;
+    height: 130px;
+    border: 6px solid #2563eb;
+    border-bottom: 8px solid #1d4ed8;
+    border-radius: 4px;
+    background-color: rgba(37, 99, 235, 0.1);
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background-image:                 linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px),                 linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px);
+    background-size: 10px 10px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    margin-bottom: -2px;
+}
+.lift-sign {
+    position: absolute;
+    top: 5px;
+    background: white;
+    color: black;
+    font-size: 8px;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 2px;
+    z-index: 30;
+    white-space: nowrap;
+}
+/* Wspólny wygląd ładunku. */
+.cargo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    visibility: hidden;
+    flex-shrink: 0;
+}
+/* Korleta z poziomu 1. */
+.cargo-corletta {
+    width: 70px;
+    height: 50px;
+    background-color: #9ca3af;
+    border: 2px solid #4b5563;
+    border-radius: 4px;
+    margin-bottom: 2px;
+}
+.cargo-corletta::before {
+    content: 'KORLETA';
+    font-size: 9px;
+    font-weight: 900;
+    color: #1f2937;
+    letter-spacing: 1px;
+}
+/* Dwie osobne drewniane skrzynie z poziomu 2. */
+.cargo-crate {
+    width: 54px;
+    height: 48px;
+    margin-bottom: 2px;
+    border: 3px solid #713f12;
+    border-radius: 3px;
+    background:                 linear-gradient(90deg, transparent 0 42%, rgba(92,48,10,0.45) 42% 48%, transparent 48% 100%),                 linear-gradient(0deg, transparent 0 44%, rgba(92,48,10,0.42) 44% 50%, transparent 50% 100%),                 repeating-linear-gradient(90deg, #b7791f 0 8px, #a16207 8px 11px);
+    box-shadow:                 inset 0 0 0 2px rgba(255, 214, 145, 0.2),                 0 4px 6px rgba(0,0,0,0.35);
+}
+.cargo-crate::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 2px solid rgba(82, 45, 8, 0.65);
+    pointer-events: none;
+}
+.cargo-crate::after {
+    content: attr(data-number);
+    position: absolute;
+    font-size: 12px;
+    font-weight: 900;
+    color: #4b2505;
+}
+/* Na platformie w poziomie 2 skrzynie stoją obok siebie. */
+#cargoLift1,         #cargoLift2,         #cargoLift3 {
+    position: absolute;
+    bottom: 4px;
+}
+#cargoLift1 {
+    left: 25px;
+}
+#cargoLift2 {
+    right: 25px;
+}
+/* Paleta i trzy różne ładunki z poziomu 3. */
+.level3-pallet {
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 14px;
+    border-radius: 2px;
+    background:                 linear-gradient(#a16207 0 3px, #713f12 3px 6px, #a16207 6px 10px, #713f12 10px 14px);
+    border: 2px solid #4a2607;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.4);
+    z-index: 2;
+}
+.level3-item {
+    position: absolute;
+    bottom: 14px;
+    width: 34px;
+    height: 38px;
+    visibility: hidden;
+    z-index: 3;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.35);
+}
+#cargoLift1.level3-item {
+    left: 14px;
+}
+#cargoLift2.level3-item {
+    left: 46px;
+}
+#cargoLift3.level3-item {
+    right: 14px;
+}
+/* Karton */
+.item-box {
+    border: 2px solid #7c4a13;
+    border-radius: 2px;
+    background:                 linear-gradient(90deg, transparent 0 45%, rgba(93,55,10,.35) 45% 52%, transparent 52% 100%),                 linear-gradient(#d6a75f, #b7791f);
+}
+.item-box::after {
+    content: '📦';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 16px;
+}
+/* Beczka */
+.item-barrel {
+    width: 32px;
+    height: 40px;
+    border: 3px solid #374151;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #6b7280 0 18%, #9ca3af 18% 82%, #6b7280 82% 100%);
+}
+.item-barrel::after {
+    content: '🛢️';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 15px;
+}
+/* Skrzynka narzędziowa */
+.item-tools {
+    height: 32px;
+    bottom: 16px;
+    border: 3px solid #991b1b;
+    border-radius: 4px;
+    background: linear-gradient(#ef4444 0 30%, #b91c1c 30% 100%);
+}
+.item-tools::before {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 6px;
+    left: 50%;
+    top: -8px;
+    transform: translateX(-50%);
+    border: 3px solid #7f1d1d;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+}
+.item-tools::after {
+    content: '🔧';
+    position: absolute;
+    left: 50%;
+    top: 58%;
+    transform: translate(-50%,-50%);
+    font-size: 14px;
+}
+.forklift-container {
+    position: absolute;
+    bottom: 12%;
+    left: -120px;
+    width: 160px;
+    height: 100px;
+    z-index: 15;
+    transition: transform 0.6s ease-in-out;
+}
+.forklift-drive-in {
+    transform: translateX(130px);
+}
+.forklift-cargo {
+    position: absolute;
+    right: 0;
+    bottom: 8px;
+    z-index: 16;
+    visibility: visible;
+}
+.forklift-cargo.cargo-crate {
+    width: 54px;
+    height: 42px;
+}
+.top-level {
+    position: absolute;
+    top: 25%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-top: 8px solid #4b5563;
+    background-color: rgba(31, 41, 55, 0.8);
+    z-index: 5;
+}
+.barrier {
+    position: absolute;
+    top: calc(25% - 40px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 40px;
+    border: 4px solid #111827;
+    border-bottom: none;
+    background: repeating-linear-gradient(45deg, #fbbf24, #fbbf24 10px, #000 10px, #000 20px);
+    z-index: 20;
+}
+.character-top {
+    position: absolute;
+    top: calc(25% - 60px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 3rem;
+    z-index: 8;
+    transition: transform 0.2s;
+}
+.level-badge {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.15);
+    z-index: 50;
+    white-space: nowrap;
+}
+.load-progress {
+    position: absolute;
+    bottom: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(300px, 80vw);
+    text-align: center;
+    z-index: 25;
+    pointer-events: none;
+    font-size: 12px;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+.controls {
+    flex: 0 0 auto;
+    width: 100%;
+    background-color: #111827;
+    padding: 15px 15px calc(15px + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    border-top: 4px solid #000;
+}
+.btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 54px;
+    padding: 15px 10px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 8px;
+    color: white;
+    transition: all 0.1s;
+}
+@media (max-width: 600px) {
+    .controls {
+        padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+        gap: 8px;
+    }
+    .btn {
+        min-height: 48px;
+        padding: 10px 6px;
+        font-size: 0.88rem;
+        line-height: 1.1;
+    }
+    .lift-cage {
+        width: 140px;
+        height: 120px;
+    }
+    .scissor-mechanism {
+        width: 115px;
+    }
+    #cargoLift1 {
+        left: 22px;
+    }
+    #cargoLift2 {
+        right: 22px;
+    }
+    .cargo-crate {
+        width: 50px;
+        height: 46px;
+    }
+    .level3-pallet {
+        width: 118px;
+    }
+    #cargoLift1.level3-item {
+        left: 10px;
+    }
+    #cargoLift2.level3-item {
+        left: 42px;
+    }
+    #cargoLift3.level3-item {
+        right: 10px;
+    }
+}
+.btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+.btn:disabled {
+    opacity: 0.3;
+    filter: grayscale(100%);
+}
+.btn-load {
+    background: linear-gradient(#dc2626, #991b1b);
+    border: 2px solid #7f1d1d;
+}
+.btn-up {
+    background: linear-gradient(#2563eb, #1e40af);
+    border: 2px solid #1e3a8a;
+}
+.btn-recv {
+    background: linear-gradient(#10b981, #047857);
+    border: 2px solid #064e3b;
+}
+.btn-down {
+    background: linear-gradient(#f59e0b, #b45309);
+    border: 2px solid #78350f;
+}
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+}
+.hidden {
+    display: none !important;
+}
+/* Finał: konfetti i fajerwerki */
+#celebrationCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 115;
+}
+.final-overlay {
+    background:
+        radial-gradient(circle at 50% 35%, rgba(59,130,246,0.22), transparent 40%),
+        radial-gradient(circle at 20% 70%, rgba(236,72,153,0.18), transparent 35%),
+        radial-gradient(circle at 80% 65%, rgba(250,204,21,0.16), transparent 35%),
+        rgba(0,0,0,0.88);
+}
+.final-title {
+    font-size: clamp(2.8rem, 12vw, 5.5rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-shadow: 0 0 18px rgba(250,204,21,0.55);
+    animation: finalTitlePulse 1.2s ease-in-out infinite alternate;
+}
+.final-message {
+    font-size: clamp(1.2rem, 5vw, 2rem);
+    font-weight: 800;
+    line-height: 1.25;
+    max-width: 650px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+.final-score {
+    font-size: clamp(2.2rem, 10vw, 4rem);
+    font-weight: 900;
+    text-shadow: 0 0 18px rgba(250,204,21,0.5);
+}
+.final-badge {
+    display: inline-block;
+    margin-bottom: 18px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(250,204,21,0.15);
+    border: 2px solid rgba(250,204,21,0.45);
+    color: #fde68a;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+@keyframes finalTitlePulse {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(1.04);
+    }
+}
+.overlay-text {
+    max-width: 560px;
+}
+.small-info {
+    margin-top: 12px;
+    color: #9ca3af;
+    font-size: 13px;
+    line-height: 1.5;
+}
+.warning-flash {
+    animation: warningFlash 0.5s ease-in-out;
+}
+@keyframes warningFlash {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1f2937; /* Ciemne tło hali */
-            color: white;
-            margin: 0;
-            overflow: hidden;
-            touch-action: none;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100vh;
-            height: 100dvh;
-            min-height: 100dvh;
+  </style>
+ </head>
+ <body>
+  <!-- Status -->
+  <div class="h-16 bg-gray-900 flex justify-between items-center px-4 shadow-xl z-50 relative border-b border-gray-700">
+   <div class="text-white font-bold text-sm">
+    OPERATOR:
+    <span class="text-blue-400">
+     Sandra
+    </span>
+    <span class="ml-2 text-gray-400 text-xs" id="levelVal">
+     POZIOM 1
+    </span>
+   </div>
+   <div class="text-2xl font-black text-yellow-400">
+    PKT:
+    <span id="scoreVal">
+     0
+    </span>
+   </div>
+   <div class="text-xl font-black text-red-500">
+    <span id="timeVal">
+     60
+    </span>
+    s
+   </div>
+  </div>
+  <!-- Plansza Gry -->
+  <div class="game-board" id="gameBoard">
+   <div class="level-badge" id="levelBadge">
+    POZIOM 1 • KORLETY
+   </div>
+   <!-- Górne piętro -->
+   <div class="top-level">
+   </div>
+   <div class="barrier">
+   </div>
+   <div class="character-top" id="charTop">
+    👩‍🔧
+   </div>
+   <!-- Dźwignik Przemysłowy -->
+   <div class="lift-system" id="liftSystem">
+    <div class="lift-cage" id="liftCage">
+     <div class="lift-sign">
+      DŹWIGNIK PRZEMYSŁOWY 4
+     </div>
+     <!-- Poziom 1: jedna korleta -->
+     <div class="cargo cargo-corletta" id="cargoLift1">
+     </div>
+     <!-- Poziom 2: dwie skrzynie obok siebie -->
+     <div class="cargo cargo-crate" data-number="2" id="cargoLift2">
+     </div>
+     <!-- Poziom 3: paleta + trzy różne ładunki -->
+     <div class="level3-pallet hidden" id="level3Pallet">
+     </div>
+     <div class="level3-item" id="cargoLift3">
+     </div>
+    </div>
+    <!-- Mechanizm nożycowy -->
+    <div class="scissor-mechanism" id="scissorMech">
+     <svg preserveaspectratio="none" viewbox="0 0 100 100">
+      <line stroke="#0ea5e9" stroke-linecap="round" stroke-width="8" x1="10" x2="90" y1="100" y2="50">
+      </line>
+      <line stroke="#0284c7" stroke-linecap="round" stroke-width="8" x1="90" x2="10" y1="100" y2="50">
+      </line>
+      <line stroke="#0ea5e9" stroke-linecap="round" stroke-width="8" x1="10" x2="90" y1="50" y2="0">
+      </line>
+      <line stroke="#0284c7" stroke-linecap="round" stroke-width="8" x1="90" x2="10" y1="50" y2="0">
+      </line>
+      <circle cx="50" cy="75" fill="#111827" r="4">
+      </circle>
+      <circle cx="50" cy="25" fill="#111827" r="4">
+      </circle>
+      <circle cx="10" cy="50" fill="#111827" r="4">
+      </circle>
+      <circle cx="90" cy="50" fill="#111827" r="4">
+      </circle>
+     </svg>
+    </div>
+   </div>
+   <!-- Podpowiedź statusu poziomu 2 -->
+   <div class="load-progress hidden" id="loadProgress">
+   </div>
+   <!-- Wózek Widłowy -->
+   <div class="forklift-container" id="forklift">
+    <div class="cargo cargo-corletta forklift-cargo" id="cargoForklift">
+    </div>
+    <!-- Rysunek wózka SVG -->
+    <svg height="100%" style="position: absolute; bottom: 0; left: 0;" viewbox="0 0 160 100" width="100%">
+     <rect fill="#6b7280" height="6" rx="2" width="50" x="110" y="80">
+     </rect>
+     <rect fill="#4b5563" height="46" width="8" x="110" y="40">
+     </rect>
+     <path d="M 20 50 L 100 50 L 115 85 L 10 85 Z" fill="#dc2626">
+     </path>
+     <path d="M 10 40 L 40 40 L 40 50 L 20 50 Z" fill="#b91c1c">
+     </path>
+     <path d="M 40 50 L 45 10 L 90 10 L 95 50" fill="none" stroke="#111827" stroke-linejoin="round" stroke-width="6">
+     </path>
+     <line stroke="#111827" stroke-linecap="round" stroke-width="8" x1="45" x2="90" y1="10" y2="10">
+     </line>
+     <!-- Operator (Gutek) -->
+     <circle cx="70" cy="35" fill="#fcd34d" r="8">
+     </circle>
+     <rect fill="#3b82f6" height="15" width="14" x="63" y="43">
+     </rect>
+     <line stroke="#fcd34d" stroke-linecap="round" stroke-width="4" x1="75" x2="85" y1="45" y2="50">
+     </line>
+     <circle cx="90" cy="48" fill="#111827" r="5">
+     </circle>
+     <rect fill="#991b1b" height="30" width="15" x="100" y="55">
+     </rect>
+     <text fill="white" font-family="sans-serif" font-size="14" font-weight="900" x="35" y="75">
+      C88H
+     </text>
+     <circle cx="40" cy="85" fill="#000" r="14">
+     </circle>
+     <circle cx="40" cy="85" fill="#9ca3af" r="6">
+     </circle>
+     <circle cx="95" cy="85" fill="#000" r="12">
+     </circle>
+     <circle cx="95" cy="85" fill="#9ca3af" r="5">
+     </circle>
+    </svg>
+   </div>
+  </div>
+  <!-- Przyciski sterowania -->
+  <div class="controls">
+   <button class="btn btn-load" id="btnLoad" onclick="game.loadCargo()">
+    ZAŁADUJ (WÓZEK)
+   </button>
+   <button class="btn btn-up" id="btnUp" onclick="game.moveLiftUp()">
+    WINDA GÓRA
+   </button>
+   <button class="btn btn-recv" id="btnReceive" onclick="game.receiveCargo()">
+    ODBIERZ
+   </button>
+   <button class="btn btn-down" id="btnDown" onclick="game.moveLiftDown()">
+    WINDA DÓŁ
+   </button>
+  </div>
+  <!-- Start -->
+  <div class="overlay" id="startScreen">
+   <h1 class="text-4xl font-black text-blue-500 mb-2">
+    DŹWIGNIK 4
+   </h1>
+   <h2 class="text-xl text-red-500 font-bold mb-6">
+    SYMULATOR ZMIANY
+   </h2>
+   <p class="overlay-text text-gray-300 mb-8">
+    Bartek, ty ładujesz korlety czerwonym C88H na dole. Winda w górę, a Sandra odbiera.             Zrób 10 punktów, żeby odblokować drugi poziom. Przy 24 punktach odblokujesz poziom 3. Masz 60 sekund na zmianę.
+   </p>
+   <button class="bg-blue-600 px-10 py-4 rounded-xl text-2xl font-bold border-b-4 border-blue-800 shadow-lg active:border-b-0 active:translate-y-1" onclick="game.startLevel1()">
+    ROZPOCZNIJ PRACĘ
+   </button>
+  </div>
+  <!-- Przejście na poziom 2 -->
+  <div class="overlay hidden" id="level2Screen">
+   <h1 class="text-5xl font-black text-yellow-400 mb-3">
+    POZIOM 2!
+   </h1>
+   <h2 class="text-2xl text-orange-400 font-black mb-5">
+    DWA ŁADUNKI
+   </h2>
+   <p class="overlay-text text-gray-300 mb-3">
+    Teraz wózek musi osobno załadować
+    <strong>
+     pierwszą skrzynię
+    </strong>
+    i osobno
+    <strong>
+     drugą skrzynię
+    </strong>
+    .             Obie stoją obok siebie na platformie.
+   </p>
+   <p class="overlay-text text-gray-300 mb-8">
+    Dopiero gdy obie są na windzie, jedziesz na górę. Sandra odbiera jedną, potem drugą.             Następnie zjeżdżasz na dół i robisz kolejną serię. Masz kolejne 60 sekund.
+   </p>
+   <button class="bg-orange-600 px-10 py-4 rounded-xl text-2xl font-bold border-b-4 border-orange-800 shadow-lg active:border-b-0 active:translate-y-1" onclick="game.startLevel2()">
+    START POZIOMU 2
+   </button>
+  </div>
+  <!-- Przejście na poziom 3 -->
+  <div class="overlay hidden" id="level3Screen">
+   <h1 class="text-5xl font-black text-yellow-400 mb-3">
+    POZIOM 3!
+   </h1>
+   <h2 class="text-2xl text-red-400 font-black mb-5">
+    PALETA
+   </h2>
+   <p class="overlay-text text-gray-300 mb-3">
+    Teraz trzeba załadować
+    <strong>
+     całą paletę
+    </strong>
+    . Wózek przywozi osobno karton, beczkę i skrzynkę narzędziową.
+   </p>
+   <p class="overlay-text text-gray-300 mb-8">
+    Wszystkie trzy ładunki muszą znaleźć się na windzie. Dopiero wtedy jedziesz na górę,             a Sandra odbiera je po kolei. Potem winda wraca na dół. Masz 60 sekund.
+   </p>
+   <button class="bg-red-600 px-10 py-4 rounded-xl text-2xl font-bold border-b-4 border-red-800 shadow-lg active:border-b-0 active:translate-y-1" onclick="game.startLevel3()">
+    START POZIOMU 3
+   </button>
+  </div>
+  <!-- Finał / koniec gry -->
+  <canvas class="hidden" id="celebrationCanvas">
+  </canvas>
+  <div class="overlay final-overlay hidden" id="endScreen">
+   <div class="hidden" id="finalNormal">
+    <h1 class="text-5xl font-black text-red-500 mb-4">
+     KONIEC ZMIANY!
+    </h1>
+    <p class="text-2xl text-white mb-3">
+     Wynik końcowy:
+     <span class="text-yellow-400 font-bold text-4xl" id="finalScore">
+      0
+     </span>
+     PKT
+    </p>
+    <p class="text-gray-300 mb-8" id="finalBreakdown">
+    </p>
+    <button class="bg-green-600 px-10 py-4 rounded-xl text-2xl font-bold border-b-4 border-green-800 shadow-lg active:border-b-0 active:translate-y-1" onclick="game.startLevel1()">
+     NOWA ZMIANA
+    </button>
+   </div>
+   <div class="hidden" id="finalSuccess">
+    <div class="final-badge">
+     🏆 MISJA UKOŃCZONA 🏆
+    </div>
+    <div class="final-title text-yellow-300 mb-5">
+     GRATULACJE!
+    </div>
+    <div class="final-message text-white mb-5">
+     KONIEC GRY!
+     <br/>
+     <span class="text-pink-300">
+      WRACAJ DO ZDROWIA, SANDRA!
+     </span>
+     ❤️
+    </div>
+    <div class="final-score text-yellow-300 mb-2">
+     <span id="finalScoreSuccess">
+      42
+     </span>
+     PKT
+    </div>
+    <p class="text-gray-300 mb-8" id="finalSuccessBreakdown">
+    </p>
+    <button class="bg-green-600 px-10 py-4 rounded-xl text-xl font-black border-b-4 border-green-800 shadow-lg active:border-b-0 active:translate-y-1" onclick="game.startLevel1()">
+     ZAGRAJ JESZCZE RAZ
+    </button>
+   </div>
+  </div>
+  <script>
+   
+const game = {
+    score: 0,
+    level: 1,
+    timeLeft: 60,
+    timer: null,
+    isActive: false,
+    runId: 0,
+    /* Stan windy.*/
+    liftPosition: 'bottom',
+    /* bottom, moving, top*/
+    /* Poziom 1.*/
+    hasCargoLift: false,
+    hasCargoForklift: true,
+    /* Poziom 2.*/
+    liftCrates: 0,
+    /* 0, 1 albo 2 skrzynie fizycznie na windzie*/
+    receivedCrates: 0,
+    /* 0, 1 albo 2 odebrane u góry*/
+    /* Poziom 3.*/
+    level3Loaded: 0,
+    level3Received: 0,
+    level3Items: [],
+    level3Types: ['box', 'barrel', 'tools'],
+    forkliftState: 'idle',
+    /* idle, moving*/
+    celebrationAnimationId: null,
+    celebrationTimeout: null,
+    LIFT_HEIGHT_BOTTOM: '20px',
+    LIFT_HEIGHT_TOP: '240px',
+    updateLiftHeight() {
+        const board = document.getElementById('gameBoard');
+        const scissor = document.getElementById('scissorMech');
+        if (!board || !scissor) return;
+        const boardHeight = board.clientHeight;
+        /* Tak jak w bazowej wersji: wysokość wynika z realnej wysokości planszy,*/
+        /* dzięki czemu pozycja górnego poziomu skaluje się na telefonie.*/
+        const responsiveHeight = Math.round(boardHeight * 0.63);
+        this.LIFT_HEIGHT_TOP = `${Math.max(150, responsiveHeight)}px`;
+        if (this.liftPosition === 'top') {
+            scissor.style.height = this.LIFT_HEIGHT_TOP;
+        } else if (this.liftPosition === 'bottom') {
+            scissor.style.height = this.LIFT_HEIGHT_BOTTOM;
         }
-
-        .game-board {
-            flex: 1 1 auto;
-            min-height: 0;
-            position: relative;
-            background: linear-gradient(to bottom, #374151 0%, #111827 100%);
-            overflow: hidden;
-        }
-
-        /* Główny kontener windy */
-        .lift-system {
-            position: absolute;
-            bottom: 12%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 140px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            z-index: 10;
-        }
-
-        /* Mechanizm nożycowy (będzie zmieniał wysokość) */
-        .scissor-mechanism {
-            width: 120px;
-            height: 20px; /* Wysokość startowa (złożona) */
-            transition: height 1.5s ease-in-out;
-            position: relative;
-            background-color: transparent;
-        }
-
-        .scissor-mechanism svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        /* Klatka windy na samej górze mechanizmu */
-        .lift-cage {
-            width: 150px;
-            height: 130px;
-            border: 6px solid #2563eb; /* Niebieska rama */
-            border-bottom: 8px solid #1d4ed8;
-            border-radius: 4px;
-            background-color: rgba(37, 99, 235, 0.1);
-            position: relative;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            /* Siatka ochronna z tyłu */
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px);
-            background-size: 10px 10px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-            margin-bottom: -2px; /* Żeby stykało się z nożycami */
-        }
-
-        .lift-sign {
-            position: absolute;
-            top: 5px;
-            background: white;
-            color: black;
-            font-size: 8px;
-            font-weight: bold;
-            padding: 2px 4px;
-            border-radius: 2px;
-        }
-
-        /* Towar - Korleta */
-        .cargo {
-            width: 70px;
-            height: 50px;
-            background-color: #9ca3af; /* Stalowy kolor */
-            border: 2px solid #4b5563;
-            border-radius: 4px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            margin-bottom: 2px;
-            visibility: hidden; /* Ukryte na start */
-        }
-        
-        .cargo::before {
-            content: 'KORLETA';
-            font-size: 9px;
-            font-weight: 900;
-            color: #1f2937;
-            letter-spacing: 1px;
-        }
-
-        /* Wózek widłowy z kontenerem do animacji */
-        .forklift-container {
-            position: absolute;
-            bottom: 12%;
-            left: -120px; /* Poza ekranem lub na skraju */
-            width: 160px;
-            height: 100px;
-            z-index: 15;
-            transition: transform 0.6s ease-in-out;
-        }
-
-        .forklift-drive-in {
-            transform: translateX(130px); /* Podjeżdża pod windę */
-        }
-
-        .forklift-cargo {
-            position: absolute;
-            right: 0px;
-            bottom: 8px;
-            visibility: visible;
-            z-index: 16;
-        }
-
-        /* Poziom górny */
-        .top-level {
-            position: absolute;
-            top: 25%;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-top: 8px solid #4b5563;
-            background-color: rgba(31, 41, 55, 0.8);
-            z-index: 5;
-        }
-
-        .barrier {
-            position: absolute;
-            top: calc(25% - 40px);
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 40px;
-            border: 4px solid #111827;
-            border-bottom: none;
-            background: repeating-linear-gradient(45deg, #fbbf24, #fbbf24 10px, #000 10px, #000 20px);
-            z-index: 20;
-        }
-
-        .character-top {
-            position: absolute;
-            top: calc(25% - 60px);
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 3rem;
-            z-index: 8;
-            transition: transform 0.2s;
-        }
-
-        /* Przyciski */
-        .controls {
-            flex: 0 0 auto;
-            width: 100%;
-            background-color: #111827;
-            padding: 15px 15px calc(15px + env(safe-area-inset-bottom));
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            border-top: 4px solid #000;
-        }
-        
-        .btn {
-            width: 100%;
-            min-width: 0;
-            min-height: 54px;
-            padding: 15px 10px;
-            font-size: 1.1rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            border-radius: 8px;
-            color: white;
-            transition: all 0.1s;
-        }
-
-        @media (max-width: 600px) {
-            .controls {
-                padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-                gap: 8px;
+    },
+    init() {
+        this.updateLiftHeight();
+        this.updateUI();
+        window.addEventListener('resize', () => {
+            this.updateLiftHeight();
+        });
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this.updateLiftHeight(), 100);
+        });
+    },
+    startLevel1() {
+        this.runId++;
+        clearInterval(this.timer);
+        this.stopCelebration();
+        document.getElementById('startScreen').classList.add('hidden');
+        document.getElementById('level2Screen').classList.add('hidden');
+        document.getElementById('level3Screen').classList.add('hidden');
+        document.getElementById('endScreen').classList.add('hidden');
+        document.getElementById('finalNormal').classList.add('hidden');
+        document.getElementById('finalSuccess').classList.add('hidden');
+        this.score = 0;
+        this.level = 1;
+        this.timeLeft = 60;
+        this.isActive = true;
+        this.resetLiftState();
+        this.updateVisualLevel();
+        this.updateUI();
+        this.startTimer();
+    },
+    startLevel2() {
+        this.runId++;
+        clearInterval(this.timer);
+        document.getElementById('level2Screen').classList.add('hidden');
+        document.getElementById('level3Screen').classList.add('hidden');
+        document.getElementById('endScreen').classList.add('hidden');
+        this.level = 2;
+        this.timeLeft = 60;
+        this.isActive = true;
+        this.resetLiftState();
+        this.updateVisualLevel();
+        this.updateUI();
+        this.startTimer();
+    },
+    startLevel3() {
+        this.runId++;
+        clearInterval(this.timer);
+        document.getElementById('startScreen').classList.add('hidden');
+        document.getElementById('level3Screen').classList.add('hidden');
+        document.getElementById('endScreen').classList.add('hidden');
+        this.level = 3;
+        this.timeLeft = 60;
+        this.isActive = true;
+        this.resetLiftState();
+        this.prepareLevel3Round();
+        this.updateVisualLevel();
+        this.updateUI();
+        this.startTimer();
+    },
+    startTimer() {
+        clearInterval(this.timer);
+        document.getElementById('timeVal').innerText = this.timeLeft;
+        this.timer = setInterval(() => {
+            if (!this.isActive) return;
+            this.timeLeft--;
+            document.getElementById('timeVal').innerText = this.timeLeft;
+            if (this.timeLeft <= 10) {
+                document.getElementById('timeVal').classList.add('warning-flash');
+                setTimeout(() => {
+                    document.getElementById('timeVal').classList.remove('warning-flash');
+                }, 500);
             }
-
-            .btn {
-                min-height: 48px;
-                padding: 10px 6px;
-                font-size: 0.88rem;
-                line-height: 1.1;
+            if (this.timeLeft <= 0) {
+                this.end();
             }
-
-            .lift-cage {
-                width: 140px;
-                height: 120px;
-            }
-
-            .scissor-mechanism {
-                width: 115px;
-            }
+        }, 1000);
+    },
+    end() {
+        if (!this.isActive) return;
+        this.isActive = false;
+        this.runId++;
+        clearInterval(this.timer);
+        const level1Score = Math.min(this.score, 10);
+        const level2Score = Math.min(14, Math.max(0, this.score - 10));
+        const level3Score = Math.max(0, this.score - 24);
+        const breakdown =                     `Poziom 1: ${level1Score} pkt • Poziom 2: ${level2Score} pkt • Poziom 3: ${level3Score} pkt`;
+        document.getElementById('finalScore').innerText = this.score;
+        document.getElementById('finalBreakdown').innerText = breakdown;
+        document.getElementById('finalSuccessBreakdown').innerText = breakdown;
+        document.getElementById('finalNormal').classList.add('hidden');
+        document.getElementById('finalSuccess').classList.add('hidden');
+        if (this.score >= 42) {
+            document.getElementById('finalScoreSuccess').innerText = this.score;
+            document.getElementById('finalSuccess').classList.remove('hidden');
+            document.getElementById('endScreen').classList.remove('hidden');
+            this.startCelebration();
+        } else {
+            document.getElementById('finalNormal').classList.remove('hidden');
+            document.getElementById('endScreen').classList.remove('hidden');
         }
-        .btn:active:not(:disabled) { transform: scale(0.95); }
-        .btn:disabled { opacity: 0.3; filter: grayscale(100%); }
-
-        .btn-load { background: linear-gradient(#dc2626, #991b1b); border: 2px solid #7f1d1d; }
-        .btn-up { background: linear-gradient(#2563eb, #1e40af); border: 2px solid #1e3a8a; }
-        .btn-recv { background: linear-gradient(#10b981, #047857); border: 2px solid #064e3b; }
-        .btn-down { background: linear-gradient(#f59e0b, #b45309); border: 2px solid #78350f; }
-
-        /* Nakładki */
-        .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        this.updateUI();
+    },
+    resetLiftState() {
+        this.liftPosition = 'bottom';
+        this.hasCargoLift = false;
+        this.hasCargoForklift = true;
+        this.forkliftState = 'idle';
+        this.liftCrates = 0;
+        this.receivedCrates = 0;
+        this.level3Loaded = 0;
+        this.level3Received = 0;
+        this.level3Items = [];
+        const scissor = document.getElementById('scissorMech');
+        const cargoLift1 = document.getElementById('cargoLift1');
+        const cargoLift2 = document.getElementById('cargoLift2');
+        const cargoLift3 = document.getElementById('cargoLift3');
+        const level3Pallet = document.getElementById('level3Pallet');
+        const cargoForklift = document.getElementById('cargoForklift');
+        const forklift = document.getElementById('forklift');
+        this.updateLiftHeight();
+        scissor.style.height = this.LIFT_HEIGHT_BOTTOM;
+        cargoLift1.style.visibility = 'hidden';
+        cargoLift2.style.visibility = 'hidden';
+        cargoLift3.style.visibility = 'hidden';
+        level3Pallet.classList.add('hidden');
+        cargoForklift.style.visibility = 'visible';
+        forklift.classList.remove('forklift-drive-in');
+        document.getElementById('scoreVal').innerText = this.score;
+    },
+    updateVisualLevel() {
+        const badge = document.getElementById('levelBadge');
+        const levelVal = document.getElementById('levelVal');
+        const progress = document.getElementById('loadProgress');
+        const cargoLift1 = document.getElementById('cargoLift1');
+        const cargoLift2 = document.getElementById('cargoLift2');
+        const cargoLift3 = document.getElementById('cargoLift3');
+        const level3Pallet = document.getElementById('level3Pallet');
+        const cargoForklift = document.getElementById('cargoForklift');
+        /* Najpierw wyczyść style specjalnych ładunków.*/
+        [cargoLift1, cargoLift2, cargoLift3].forEach(el => {
+            el.classList.remove('level3-item', 'item-box', 'item-barrel', 'item-tools');
+        });
+        cargoLift3.classList.add('level3-item');
+        if (this.level === 1) {
+            badge.innerText = 'POZIOM 1 • KORLETY';
+            levelVal.innerText = 'POZIOM 1';
+            progress.classList.add('hidden');
+            level3Pallet.classList.add('hidden');
+            cargoLift1.classList.remove('cargo-crate');
+            cargoLift1.classList.add('cargo-corletta');
+            cargoLift1.innerText = '';
+            cargoLift1.removeAttribute('data-number');
+            cargoLift2.style.visibility = 'hidden';
+            cargoLift3.style.visibility = 'hidden';
+            cargoForklift.className = 'cargo cargo-corletta forklift-cargo';
+            cargoForklift.innerText = '';
+            cargoForklift.removeAttribute('data-number');
+        } else if (this.level === 2) {
+            badge.innerText = 'POZIOM 2 • DWIE SKRZYNIE';
+            levelVal.innerText = 'POZIOM 2';
+            progress.classList.remove('hidden');
+            level3Pallet.classList.add('hidden');
+            cargoLift1.classList.remove('cargo-corletta');
+            cargoLift1.classList.add('cargo-crate');
+            cargoLift1.setAttribute('data-number', '1');
+            cargoLift2.classList.remove('cargo-corletta');
+            cargoLift2.classList.add('cargo-crate');
+            cargoLift2.setAttribute('data-number', '2');
+            cargoLift3.style.visibility = 'hidden';
+            cargoForklift.className = 'cargo cargo-crate forklift-cargo';
+            cargoForklift.setAttribute('data-number', '•');
+        } else {
+            badge.innerText = 'POZIOM 3 • PALETA';
+            levelVal.innerText = 'POZIOM 3';
+            progress.classList.remove('hidden');
+            level3Pallet.classList.remove('hidden');
+            this.applyLevel3ItemClass(cargoLift1, this.level3Items[0]);
+            this.applyLevel3ItemClass(cargoLift2, this.level3Items[1]);
+            this.applyLevel3ItemClass(cargoLift3, this.level3Items[2]);
+            cargoLift1.style.visibility = 'hidden';
+            cargoLift2.style.visibility = 'hidden';
+            cargoLift3.style.visibility = 'hidden';
+            this.applyForkliftLevel3Item(cargoForklift, this.level3Items[this.level3Loaded]);
         }
-    </style>
-</head>
-<body>
-
-    <!-- Status -->
-    <div class="h-16 bg-gray-900 flex justify-between items-center px-4 shadow-xl z-50 relative border-b border-gray-700">
-        <div class="text-white font-bold text-sm">OPERATOR: <span class="text-blue-400">Sandra</span></div>
-        <div class="text-2xl font-black text-yellow-400">PKT: <span id="scoreVal">0</span></div>
-        <div class="text-xl font-black text-red-500"><span id="timeVal">60</span>s</div>
-    </div>
-
-    <!-- Plansza Gry -->
-    <div class="game-board" id="gameBoard">
-        <!-- Górne piętro -->
-        <div class="top-level"></div>
-        <div class="barrier"></div>
-        <div class="character-top" id="charTop">👩‍🔧</div>
-
-        <!-- Dźwignik Przemysłowy (System Windy) -->
-        <div class="lift-system" id="liftSystem">
-            <div class="lift-cage" id="liftCage">
-                <div class="lift-sign">DŹWIGNIK PRZEMYSŁOWY 4</div>
-                <!-- Towar na windzie -->
-                <div class="cargo" id="cargoLift"></div>
-            </div>
-            
-            <!-- Mechanizm nożycowy (SVG renderujące krzyżaki, rozciągające się dynamicznie) -->
-            <div class="scissor-mechanism" id="scissorMech">
-                <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <!-- Podwójne ramiona nożycowe -->
-                    <line x1="10" y1="100" x2="90" y2="50" stroke="#0ea5e9" stroke-width="8" stroke-linecap="round"/>
-                    <line x1="90" y1="100" x2="10" y2="50" stroke="#0284c7" stroke-width="8" stroke-linecap="round"/>
-                    
-                    <line x1="10" y1="50" x2="90" y2="0" stroke="#0ea5e9" stroke-width="8" stroke-linecap="round"/>
-                    <line x1="90" y1="50" x2="10" y2="0" stroke="#0284c7" stroke-width="8" stroke-linecap="round"/>
-                    
-                    <!-- Sworznie łączące -->
-                    <circle cx="50" cy="75" r="4" fill="#111827"/>
-                    <circle cx="50" cy="25" r="4" fill="#111827"/>
-                    <circle cx="10" cy="50" r="4" fill="#111827"/>
-                    <circle cx="90" cy="50" r="4" fill="#111827"/>
-                </svg>
-            </div>
-        </div>
-
-        <!-- Wózek Widłowy -->
-        <div class="forklift-container" id="forklift">
-            <!-- Towar na widłach -->
-            <div class="cargo forklift-cargo" id="cargoForklift"></div>
-            
-            <!-- Rysunek wózka SVG -->
-            <svg width="100%" height="100%" viewBox="0 0 160 100" style="position: absolute; bottom: 0; left: 0;">
-                <!-- Widły -->
-                <rect x="110" y="80" width="50" height="6" fill="#6b7280" rx="2"/>
-                <rect x="110" y="40" width="8" height="46" fill="#4b5563"/>
-                
-                <!-- Karoseria główna - Czerwona -->
-                <path d="M 20 50 L 100 50 L 115 85 L 10 85 Z" fill="#dc2626"/>
-                <path d="M 10 40 L 40 40 L 40 50 L 20 50 Z" fill="#b91c1c"/> <!-- Przeciwwaga -->
-                
-                <!-- Klatka kabiny -->
-                <path d="M 40 50 L 45 10 L 90 10 L 95 50" fill="none" stroke="#111827" stroke-width="6" stroke-linejoin="round"/>
-                <line x1="45" y1="10" x2="90" y2="10" stroke="#111827" stroke-width="8" stroke-linecap="round"/>
-                
-                <!-- Operator (Gutek) zarys -->
-                <circle cx="70" cy="35" r="8" fill="#fcd34d"/>
-                <rect x="63" y="43" width="14" height="15" fill="#3b82f6"/>
-                <line x1="75" y1="45" x2="85" y2="50" stroke="#fcd34d" stroke-width="4" stroke-linecap="round"/> <!-- Ręka na kierownicy -->
-                <circle cx="90" cy="48" r="5" fill="#111827"/> <!-- Kierownica -->
-
-                <!-- Zderzaki / detale -->
-                <rect x="100" y="55" width="15" height="30" fill="#991b1b"/>
-                
-                <!-- Napis C88H na karoserii -->
-                <text x="35" y="75" fill="white" font-family="sans-serif" font-weight="900" font-size="14">C88H</text>
-
-                <!-- Koła (czarne opony, szare felgi) -->
-                <circle cx="40" cy="85" r="14" fill="#000"/>
-                <circle cx="40" cy="85" r="6" fill="#9ca3af"/>
-                
-                <circle cx="95" cy="85" r="12" fill="#000"/>
-                <circle cx="95" cy="85" r="5" fill="#9ca3af"/>
-            </svg>
-        </div>
-    </div>
-
-    <!-- Przyciski sterowania -->
-    <div class="controls">
-        <button id="btnLoad" class="btn btn-load" onclick="game.loadCargo()">ZAŁADUJ (WÓZEK)</button>
-        <button id="btnUp" class="btn btn-up" onclick="game.moveLiftUp()">WINDA GÓRA</button>
-        <button id="btnReceive" class="btn btn-recv" onclick="game.receiveCargo()">ODBIERZ</button>
-        <button id="btnDown" class="btn btn-down" onclick="game.moveLiftDown()">WINDA DÓŁ</button>
-    </div>
-
-    <!-- Ekrany Menu -->
-    <div id="startScreen" class="overlay">
-        <h1 class="text-4xl font-black text-blue-500 mb-2">DŹWIGNIK 4</h1>
-        <h2 class="text-xl text-red-500 font-bold mb-6">SYMULATOR ZMIANY</h2>
-        <p class="text-gray-300 text-center px-6 mb-8">
-            Bartek, ty ładujesz korlety czerwonym C88H na dole. Winda w górę, a Sandra odbiera. Pokażcie jak się pracuje na magazynie! Masz 60s.
-        </p>
-        <button onclick="game.start()" class="bg-blue-600 px-10 py-4 rounded-xl text-2xl font-bold border-b-4 border-blue-800 shadow-lg active:border-b-0 active:translate-y-1">ROZPOCZNIJ PRACĘ</button>
-    </div>
-
-    <div id="endScreen" class="overlay hidden">
-        <h1 class="text-5xl font-black text-red-500 mb-4">KONIEC ZMIANY!</h1>
-        <p class="text-2xl text-white mb-6">Rozładowane korlety: <span id="finalScore" class="text-yellow-400 font-bold text-4xl">0</span></p>
-        <button onclick="game.start()" class="bg-green-600 px-10 py-4 rounded-xl text-2xl font-bold border-b-4 border-green-800 shadow-lg active:border-b-0 active:translate-y-1">NOWA ZMIANA</button>
-    </div>
-
-    <script>
-        const game = {
-            score: 0,
-            timeLeft: 60,
-            timer: null,
-            isActive: false,
-            
-            // Stany:
-            liftPosition: 'bottom', // 'bottom', 'moving', 'top'
-            hasCargoLift: false,
-            hasCargoForklift: true,
-            forkliftState: 'idle', // 'idle', 'moving'
-
-            // Wysokości mechanizmu nożycowego.
-            // Górna wysokość jest wyliczana z realnej wysokości planszy,
-            // dzięki czemu winda dojeżdża do poziomu Sandry także na telefonie.
-            LIFT_HEIGHT_BOTTOM: '20px',
-            LIFT_HEIGHT_TOP: '240px',
-
-            updateLiftHeight() {
-                const board = document.getElementById('gameBoard');
-                const scissor = document.getElementById('scissorMech');
-
-                if (!board || !scissor) return;
-
-                const boardHeight = board.clientHeight;
-
-                // Dźwignik stoi 12% od dołu, a górny poziom znajduje się na 25% planszy.
-                // Mechanizm musi więc pokonać około 63% wysokości planszy.
-                const responsiveHeight = Math.round(boardHeight * 0.63);
-
-                this.LIFT_HEIGHT_TOP = `${Math.max(150, responsiveHeight)}px`;
-
-                if (this.liftPosition === 'top') {
-                    scissor.style.height = this.LIFT_HEIGHT_TOP;
-                } else if (this.liftPosition === 'bottom') {
-                    scissor.style.height = this.LIFT_HEIGHT_BOTTOM;
+        this.updateProgressText();
+    },
+    applyLevel3ItemClass(element, type) {
+        if (!element) return;
+        element.classList.remove('cargo', 'cargo-corletta', 'cargo-crate');
+        element.classList.add('level3-item');
+        if (type === 'box') element.classList.add('item-box');
+        if (type === 'barrel') element.classList.add('item-barrel');
+        if (type === 'tools') element.classList.add('item-tools');
+    },
+    applyForkliftLevel3Item(element, type) {
+        if (!element) return;
+        element.classList.remove('cargo-corletta', 'cargo-crate', 'level3-item', 'item-box', 'item-barrel', 'item-tools');
+        element.classList.add('cargo', 'forklift-cargo');
+        element.style.visibility = 'visible';
+        if (type === 'box') element.classList.add('item-box');
+        if (type === 'barrel') element.classList.add('item-barrel');
+        if (type === 'tools') element.classList.add('item-tools');
+    },
+    prepareLevel3Round() {
+        this.level3Loaded = 0;
+        this.level3Received = 0;
+        this.level3Items = [...this.level3Types].sort(() => Math.random() - 0.5);
+        document.getElementById('cargoLift1').style.visibility = 'hidden';
+        document.getElementById('cargoLift2').style.visibility = 'hidden';
+        document.getElementById('cargoLift3').style.visibility = 'hidden';
+        document.getElementById('level3Pallet').classList.remove('hidden');
+        const cargoForklift = document.getElementById('cargoForklift');
+        this.applyForkliftLevel3Item(cargoForklift, this.level3Items[0]);
+    },
+    updateProgressText() {
+        const progress = document.getElementById('loadProgress');
+        if (this.level === 1) {
+            progress.classList.add('hidden');
+            return;
+        }
+        progress.classList.remove('hidden');
+        if (this.level === 2) {
+            if (this.liftPosition === 'bottom') {
+                progress.innerText = `SKRZYNIE NA PLATFORMIE: ${this.liftCrates}/2`;
+            } else if (this.liftPosition === 'top') {
+                progress.innerText = `ODEBRANE PRZEZ SANDRĘ: ${this.receivedCrates}/2`;
+            } else {
+                progress.innerText = 'WINDA W RUCHU…';
+            }
+            return;
+        }
+        if (this.liftPosition === 'bottom') {
+            progress.innerText = `ŁADUNKI NA PALECIE: ${this.level3Loaded}/3`;
+        } else if (this.liftPosition === 'top') {
+            progress.innerText = `ODEBRANE PRZEZ SANDRĘ: ${this.level3Received}/3`;
+        } else {
+            progress.innerText = 'WINDA W RUCHU…';
+        }
+    },
+    updateUI() {
+        const btnLoad = document.getElementById('btnLoad');
+        const btnUp = document.getElementById('btnUp');
+        const btnRecv = document.getElementById('btnReceive');
+        const btnDown = document.getElementById('btnDown');
+        btnLoad.disabled = true;
+        btnUp.disabled = true;
+        btnRecv.disabled = true;
+        btnDown.disabled = true;
+        document.getElementById('scoreVal').innerText = this.score;
+        document.getElementById('timeVal').innerText = this.timeLeft;
+        this.updateProgressText();
+        if (!this.isActive) return;
+        if (this.level === 1) {
+            if (this.liftPosition === 'bottom' && this.forkliftState === 'idle') {
+                if (!this.hasCargoLift && this.hasCargoForklift) {
+                    btnLoad.disabled = false;
                 }
-            },
-
-            init() {
-                this.updateLiftHeight();
-                this.updateUI();
-
-                window.addEventListener('resize', () => {
-                    this.updateLiftHeight();
-                });
-
-                window.addEventListener('orientationchange', () => {
-                    setTimeout(() => this.updateLiftHeight(), 100);
-                });
-            },
-
-            start() {
-                document.getElementById('startScreen').classList.add('hidden');
-                document.getElementById('endScreen').classList.add('hidden');
-                
-                this.score = 0;
-                this.timeLeft = 60;
-                this.liftPosition = 'bottom';
-                this.hasCargoLift = false;
-                this.hasCargoForklift = true;
-                
-                // Reset wizualny
-                this.updateLiftHeight();
-                document.getElementById('scissorMech').style.height = this.LIFT_HEIGHT_BOTTOM;
-                document.getElementById('cargoLift').style.visibility = 'hidden';
-                document.getElementById('cargoForklift').style.visibility = 'visible';
-                document.getElementById('scoreVal').innerText = '0';
-                
-                this.isActive = true;
-                this.updateUI();
-                
-                clearInterval(this.timer);
-                this.timer = setInterval(() => {
-                    this.timeLeft--;
-                    document.getElementById('timeVal').innerText = this.timeLeft;
-                    if (this.timeLeft <= 0) this.end();
-                }, 1000);
-            },
-
-            end() {
-                this.isActive = false;
-                clearInterval(this.timer);
-                document.getElementById('finalScore').innerText = this.score;
-                document.getElementById('endScreen').classList.remove('hidden');
-                this.updateUI();
-            },
-
-            updateUI() {
-                const btnLoad = document.getElementById('btnLoad');
-                const btnUp = document.getElementById('btnUp');
-                const btnRecv = document.getElementById('btnReceive');
-                const btnDown = document.getElementById('btnDown');
-
-                // Domyślne blokowanie
-                btnLoad.disabled = true;
-                btnUp.disabled = true;
-                btnRecv.disabled = true;
-                btnDown.disabled = true;
-
-                if (!this.isActive) return;
-
-                // Logika aktywacji przycisków
-                if (this.liftPosition === 'bottom' && this.forkliftState === 'idle') {
-                    if (!this.hasCargoLift && this.hasCargoForklift) btnLoad.disabled = false;
+                /* Zachowujemy pierwotne zachowanie poziomu 1:*/
+                /* windę można podnieść pustą albo z korletą.*/
+                btnUp.disabled = false;
+            }
+            if (this.liftPosition === 'top') {
+                if (this.hasCargoLift) {
+                    btnRecv.disabled = false;
+                } else {
+                    btnDown.disabled = false;
+                }
+            }
+        } else if (this.level === 2) {
+            /* Poziom 2: najpierw osobno ładujemy skrzynię 1 i skrzynię 2.*/
+            if (this.liftPosition === 'bottom' && this.forkliftState === 'idle') {
+                if (this.liftCrates < 2 && this.hasCargoForklift) {
+                    btnLoad.disabled = false;
+                }
+                if (this.liftCrates === 2) {
                     btnUp.disabled = false;
                 }
-                
-                if (this.liftPosition === 'top') {
-                    if (this.hasCargoLift) btnRecv.disabled = false;
-                    if (!this.hasCargoLift) btnDown.disabled = false;
-                }
-            },
-
-            // Akcja: Podjazd wózkiem i ładunek
-            loadCargo() {
-                if (this.liftPosition !== 'bottom' || this.hasCargoLift) return;
-                
-                this.forkliftState = 'moving';
-                this.updateUI();
-                
-                const fl = document.getElementById('forklift');
-                const cLift = document.getElementById('cargoLift');
-                const cFork = document.getElementById('cargoForklift');
-
-                // 1. Wózek podjeżdża
-                fl.classList.add('forklift-drive-in');
-                
-                setTimeout(() => {
-                    // 2. Przekazanie towaru na windę
-                    cFork.style.visibility = 'hidden';
-                    cLift.style.visibility = 'visible';
-                    this.hasCargoLift = true;
-                    this.hasCargoForklift = false;
-                    
-                    // 3. Wózek odjeżdża po chwili
-                    setTimeout(() => {
-                        fl.classList.remove('forklift-drive-in');
-                        
-                        setTimeout(() => {
-                            // 4. Wózek odzyskał nowy towar poza ekranem, jest gotowy
-                            this.hasCargoForklift = true;
-                            cFork.style.visibility = 'visible';
-                            this.forkliftState = 'idle';
-                            this.updateUI();
-                        }, 600);
-                        
-                    }, 400);
-                }, 600);
-            },
-
-            moveLiftUp() {
-                if (this.liftPosition !== 'bottom') return;
-                
-                this.liftPosition = 'moving';
-                this.updateUI();
-                
-                // Animacja nożyc - rozciąganie do góry
-                this.updateLiftHeight();
-                document.getElementById('scissorMech').style.height = this.LIFT_HEIGHT_TOP;
-                
-                setTimeout(() => {
-                    this.liftPosition = 'top';
-                    this.updateUI();
-                }, 1500);
-            },
-
-            receiveCargo() {
-                if (this.liftPosition !== 'top' || !this.hasCargoLift) return;
-                
-                // Odbiór towaru
-                this.hasCargoLift = false;
-                document.getElementById('cargoLift').style.visibility = 'hidden';
-                
-                this.score++;
-                document.getElementById('scoreVal').innerText = this.score;
-                
-                // Radość postaci
-                const char = document.getElementById('charTop');
-                char.innerText = '🙋‍♀️';
-                char.style.transform = 'translateX(-50%) translateY(-10px) scale(1.2)';
-                
-                setTimeout(() => {
-                    char.innerText = '👩‍🔧';
-                    char.style.transform = 'translateX(-50%)';
-                    this.updateUI();
-                }, 800);
-                
-                this.updateUI();
-            },
-
-            moveLiftDown() {
-                if (this.liftPosition !== 'top') return;
-                
-                this.liftPosition = 'moving';
-                this.updateUI();
-                
-                // Animacja nożyc - składanie do dołu
-                document.getElementById('scissorMech').style.height = this.LIFT_HEIGHT_BOTTOM;
-                
-                setTimeout(() => {
-                    this.liftPosition = 'bottom';
-                    this.updateUI();
-                }, 1500);
             }
+            if (this.liftPosition === 'top') {
+                if (this.receivedCrates < this.liftCrates) {
+                    btnRecv.disabled = false;
+                }
+                if (this.liftCrates === 2 && this.receivedCrates === 2) {
+                    btnDown.disabled = false;
+                }
+            }
+        } else {
+            /* Poziom 3: osobno ładujemy 3 różne ładunki na jedną paletę.*/
+            if (this.liftPosition === 'bottom' && this.forkliftState === 'idle') {
+                if (this.level3Loaded < 3 && this.hasCargoForklift) {
+                    btnLoad.disabled = false;
+                }
+                if (this.level3Loaded === 3) {
+                    btnUp.disabled = false;
+                }
+            }
+            if (this.liftPosition === 'top') {
+                if (this.level3Received < 3) {
+                    btnRecv.disabled = false;
+                }
+                if (this.level3Loaded === 3 && this.level3Received === 3) {
+                    btnDown.disabled = false;
+                }
+            }
+        }
+    },
+    loadCargo() {
+        if (!this.isActive || this.liftPosition !== 'bottom' || this.forkliftState !== 'idle') return;
+        if (this.level === 1) {
+            if (this.hasCargoLift || !this.hasCargoForklift) return;
+            this.loadLevel1Cargo();
+            return;
+        }
+        if (this.level === 2) {
+            /* Poziom 2: każda skrzynia jest dostarczana osobno.*/
+            if (this.liftCrates >= 2 || !this.hasCargoForklift) return;
+            this.forkliftState = 'moving';
+            this.hasCargoForklift = false;
+            this.updateUI();
+            const runId = this.runId;
+            const fl = document.getElementById('forklift');
+            const cargoForklift = document.getElementById('cargoForklift');
+            const target = this.liftCrates === 0                         ? document.getElementById('cargoLift1')                         : document.getElementById('cargoLift2');
+            fl.classList.add('forklift-drive-in');
+            setTimeout(() => {
+                if (runId !== this.runId || !this.isActive) return;
+                cargoForklift.style.visibility = 'hidden';
+                target.style.visibility = 'visible';
+                this.liftCrates++;
+                setTimeout(() => {
+                    if (runId !== this.runId || !this.isActive) return;
+                    fl.classList.remove('forklift-drive-in');
+                    setTimeout(() => {
+                        if (runId !== this.runId || !this.isActive) return;
+                        this.hasCargoForklift = true;
+                        cargoForklift.style.visibility = 'visible';
+                        this.forkliftState = 'idle';
+                        this.updateUI();
+                    }, 600);
+                }, 400);
+            }, 600);
+            return;
+        }
+        /* Poziom 3: trzy różne ładunki, każdy przywożony osobno.*/
+        if (this.level3Loaded >= 3 || !this.hasCargoForklift) return;
+        this.forkliftState = 'moving';
+        this.hasCargoForklift = false;
+        this.updateUI();
+        const runId = this.runId;
+        const fl = document.getElementById('forklift');
+        const cargoForklift = document.getElementById('cargoForklift');
+        const target = [
+            document.getElementById('cargoLift1'),
+            document.getElementById('cargoLift2'),
+            document.getElementById('cargoLift3')
+        ][this.level3Loaded];
+        fl.classList.add('forklift-drive-in');
+        setTimeout(() => {
+            if (runId !== this.runId || !this.isActive) return;
+            cargoForklift.style.visibility = 'hidden';
+            target.style.visibility = 'visible';
+            this.level3Loaded++;
+            setTimeout(() => {
+                if (runId !== this.runId || !this.isActive) return;
+                fl.classList.remove('forklift-drive-in');
+                setTimeout(() => {
+                    if (runId !== this.runId || !this.isActive) return;
+                    this.hasCargoForklift = true;
+                    this.forkliftState = 'idle';
+                    if (this.level3Loaded < 3) {
+                        cargoForklift.style.visibility = 'visible';
+                        this.applyForkliftLevel3Item(cargoForklift, this.level3Items[this.level3Loaded]);
+                    } else {
+                        /* Cała paleta jest już załadowana — wózek ma puste widły.*/
+                        cargoForklift.style.visibility = 'hidden';
+                    }
+                    this.updateUI();
+                }, 600);
+            }, 400);
+        }, 600);
+    },
+    loadLevel1Cargo() {
+        this.forkliftState = 'moving';
+        this.hasCargoForklift = false;
+        this.updateUI();
+        const runId = this.runId;
+        const fl = document.getElementById('forklift');
+        const cLift = document.getElementById('cargoLift1');
+        const cFork = document.getElementById('cargoForklift');
+        fl.classList.add('forklift-drive-in');
+        setTimeout(() => {
+            if (runId !== this.runId || !this.isActive) return;
+            cFork.style.visibility = 'hidden';
+            cLift.style.visibility = 'visible';
+            this.hasCargoLift = true;
+            setTimeout(() => {
+                if (runId !== this.runId || !this.isActive) return;
+                fl.classList.remove('forklift-drive-in');
+                setTimeout(() => {
+                    if (runId !== this.runId || !this.isActive) return;
+                    this.hasCargoForklift = true;
+                    cFork.style.visibility = 'visible';
+                    this.forkliftState = 'idle';
+                    this.updateUI();
+                }, 600);
+            }, 400);
+        }, 600);
+    },
+    moveLiftUp() {
+        if (!this.isActive || this.liftPosition !== 'bottom') return;
+        if (this.level === 2 && this.liftCrates !== 2) return;
+        if (this.level === 3 && this.level3Loaded !== 3) return;
+        if (this.level === 1 && this.hasCargoLift === false) {
+            /* Pusta winda może jechać w poziomie 1, tak jak wcześniej.*/
+        }
+        this.liftPosition = 'moving';
+        this.updateUI();
+        const runId = this.runId;
+        this.updateLiftHeight();
+        document.getElementById('scissorMech').style.height = this.LIFT_HEIGHT_TOP;
+        setTimeout(() => {
+            if (runId !== this.runId || !this.isActive) return;
+            this.liftPosition = 'top';
+            this.updateUI();
+        }, 1500);
+    },
+    receiveCargo() {
+        if (!this.isActive || this.liftPosition !== 'top') return;
+        if (this.level === 1) {
+            if (!this.hasCargoLift) return;
+            this.hasCargoLift = false;
+            document.getElementById('cargoLift1').style.visibility = 'hidden';
+            this.score++;
+            document.getElementById('scoreVal').innerText = this.score;
+            this.celebrate();
+            /* Po 10 korletach wchodzimy na poziom 2.*/
+            if (this.score >= 10) {
+                clearInterval(this.timer);
+                this.isActive = false;
+                const runId = this.runId;
+                setTimeout(() => {
+                    if (runId !== this.runId) return;
+                    document.getElementById('level2Screen').classList.remove('hidden');
+                    this.updateUI();
+                }, 850);
+                return;
+            }
+            this.updateUI();
+            return;
+        }
+        if (this.level === 2) {
+            /* Poziom 2: jedna skrzynia na klik.*/
+            if (this.receivedCrates >= this.liftCrates) return;
+            const crateNumber = this.receivedCrates + 1;
+            const crateElement = crateNumber === 1                         ? document.getElementById('cargoLift1')                         : document.getElementById('cargoLift2');
+            crateElement.style.visibility = 'hidden';
+            this.receivedCrates++;
+            this.score++;
+            document.getElementById('scoreVal').innerText = this.score;
+            this.celebrate();
+            /* Po 24 punktach przechodzimy na poziom 3.*/
+            if (this.score >= 24) {
+                clearInterval(this.timer);
+                this.isActive = false;
+                const runId = this.runId;
+                setTimeout(() => {
+                    if (runId !== this.runId) return;
+                    document.getElementById('level3Screen').classList.remove('hidden');
+                    this.updateUI();
+                }, 850);
+                return;
+            }
+            this.updateUI();
+            return;
+        }
+        /* Poziom 3: jeden element palety na klik.*/
+        if (this.level3Received >= this.level3Loaded) return;
+        const itemNumber = this.level3Received + 1;
+        const itemElement = document.getElementById(`cargoLift${itemNumber}`);
+        itemElement.style.visibility = 'hidden';
+        this.level3Received++;
+        this.score++;
+        document.getElementById('scoreVal').innerText = this.score;
+        this.celebrate();
+        /* 42 punktów = ukończenie całej gry.*/
+        if (this.score >= 42) {
+            /*
+            * 42 punkty = natychmiastowy koniec gry.
+            *
+            * Wcześniej było tutaj opóźnienie 450 ms i ponowne
+            * wywołanie end(). To było niepotrzebne i mogło zostać
+            * przerwane przez inne zdarzenie/stan gry.
+            *
+            * Wywołujemy end() od razu. Metoda end() sama:
+            * - zatrzymuje grę,
+            * - zatrzymuje timer,
+            * - pokazuje ekran końcowy,
+            * - pokazuje komunikat GRATULACJE,
+            * - uruchamia konfetti i fajerwerki.
+            */
+            this.end();
+            return;
+        }
+        this.updateUI();
+    },
+    moveLiftDown() {
+        if (!this.isActive || this.liftPosition !== 'top') return;
+        if (this.level === 1) {
+            if (this.hasCargoLift) return;
+        } else if (this.level === 2) {
+            /* W poziomie 2 nie zjeżdżamy, dopóki Sandra nie odbierze obu skrzyń.*/
+            if (this.liftCrates !== 2 || this.receivedCrates !== 2) return;
+        } else {
+            /* W poziomie 3 nie zjeżdżamy, dopóki Sandra nie odbierze całej palety.*/
+            if (this.level3Loaded !== 3 || this.level3Received !== 3) return;
+        }
+        this.liftPosition = 'moving';
+        this.updateUI();
+        const runId = this.runId;
+        document.getElementById('scissorMech').style.height = this.LIFT_HEIGHT_BOTTOM;
+        setTimeout(() => {
+            if (runId !== this.runId || !this.isActive) return;
+            this.liftPosition = 'bottom';
+            if (this.level === 2) {
+                /* Zaczynamy od nowej serii dwóch skrzyń.*/
+                this.liftCrates = 0;
+                this.receivedCrates = 0;
+                document.getElementById('cargoLift1').style.visibility = 'hidden';
+                document.getElementById('cargoLift2').style.visibility = 'hidden';
+            }
+            if (this.level === 3) {
+                /* Zaczynamy od nowej palety z losową kolejnością ładunków.*/
+                this.prepareLevel3Round();
+            }
+            this.updateUI();
+        }, 1500);
+    },
+    stopCelebration() {
+        if (this.celebrationAnimationId) {
+            cancelAnimationFrame(this.celebrationAnimationId);
+            this.celebrationAnimationId = null;
+        }
+        clearTimeout(this.celebrationTimeout);
+        this.celebrationTimeout = null;
+        const canvas = document.getElementById('celebrationCanvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.classList.add('hidden');
+        }
+    },
+    startCelebration() {
+        const canvas = document.getElementById('celebrationCanvas');
+        if (!canvas) return;
+        this.stopCelebration();
+        canvas.classList.remove('hidden');
+        const ctx = canvas.getContext('2d');
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const resizeCanvas = () => {
+            canvas.width = Math.floor(window.innerWidth * dpr);
+            canvas.height = Math.floor(window.innerHeight * dpr);
+            canvas.style.width = `${window.innerWidth}px`;
+            canvas.style.height = `${window.innerHeight}px`;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         };
+        resizeCanvas();
+        const colors = ['#facc15', '#fb7185', '#60a5fa', '#34d399', '#c084fc', '#fb923c'];
+        const confetti = [];
+        const fireworks = [];
+        const gravity = 0.12;
+        const count = Math.min(180, Math.max(90, Math.floor(window.innerWidth / 5)));
+        for (let i = 0; i < count; i++) {
+            confetti.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * -window.innerHeight,
+                vx: (Math.random() - 0.5) * 2.5,
+                vy: Math.random() * 2 + 1.5,
+                size: Math.random() * 7 + 4,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.22,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+        }
+        const spawnFirework = () => {
+            fireworks.push({
+                x: Math.random() * window.innerWidth * 0.85 + window.innerWidth * 0.075,
+                y: Math.random() * window.innerHeight * 0.38 + window.innerHeight * 0.12,
+                age: 0,
+                life: 45 + Math.random() * 25,
+                particles: Array.from({ length: 30 }, () => {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 4.5 + 2;
+                    return {
+                        x: 0,
+                        y: 0,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: Math.random() * 2.2 + 1.2,
+                        alpha: 1,
+                        color: colors[Math.floor(Math.random() * colors.length)]
+                    };
+                })
+            });
+        };
+        let lastFirework = 0;
+        const frame = (timestamp) => {
+            ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            for (const piece of confetti) {
+                piece.x += piece.vx;
+                piece.vy += gravity * 0.15;
+                piece.y += piece.vy;
+                piece.rotation += piece.rotationSpeed;
+                if (piece.y > window.innerHeight + 30) {
+                    piece.y = -20;
+                    piece.x = Math.random() * window.innerWidth;
+                    piece.vy = Math.random() * 2 + 1.5;
+                }
+                ctx.save();
+                ctx.translate(piece.x, piece.y);
+                ctx.rotate(piece.rotation);
+                ctx.fillStyle = piece.color;
+                ctx.fillRect(-piece.size / 2, -piece.size / 3, piece.size, piece.size * 0.65);
+                ctx.restore();
+            }
+            if (timestamp - lastFirework > 520) {
+                spawnFirework();
+                lastFirework = timestamp;
+            }
+            for (let i = fireworks.length - 1; i >= 0; i--) {
+                const firework = fireworks[i];
+                firework.age++;
+                for (const particle of firework.particles) {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vy += 0.045;
+                    particle.alpha *= 0.965;
+                    ctx.globalAlpha = Math.max(0, particle.alpha);
+                    ctx.beginPath();
+                    ctx.arc(
+                        firework.x + particle.x,
+                        firework.y + particle.y,
+                        particle.size,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fillStyle = particle.color;
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                if (firework.age > firework.life) {
+                    fireworks.splice(i, 1);
+                }
+            }
+            this.celebrationAnimationId = requestAnimationFrame(frame);
+        };
+        this.celebrationAnimationId = requestAnimationFrame(frame);
+    },
+    celebrate() {
+        const char = document.getElementById('charTop');
+        char.innerText = '🙋‍♀️';
+        char.style.transform = 'translateX(-50%) translateY(-10px) scale(1.2)';
+        const runId = this.runId;
+        setTimeout(() => {
+            if (runId !== this.runId) return;
+            char.innerText = '👩‍🔧';
+            char.style.transform = 'translateX(-50%)';
+        }, 800);
+    }
+};
+game.init();
 
-        // Inicjalizacja przycisków przy wczytaniu
-        game.init();
-    </script>
-</body>
+  </script>
+ </body>
 </html>
+
